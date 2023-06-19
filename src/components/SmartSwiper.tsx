@@ -16,11 +16,11 @@ function ThumbnailPlugin(
   return (slider) => {
     function removeActive() {
       slider.slides.forEach((slide) => {
-        slide.classList.remove("active");
+        slide.classList.remove("border-dashed");
       });
     }
     function addActive(idx: number) {
-      slider.slides[idx].classList.add("active");
+      slider.slides[idx].classList.add("border-dashed");
     }
 
     function addClickEvents() {
@@ -129,13 +129,13 @@ export default function SmartSwiper() {
         </div>
       )}
       <div ref={thumbnailRef} className="keen-slider">
-        <button className="keen-slider__slide appearance-none bg-red-400 p-4 rounded cursor-pointer">
+        <button className="keen-slider__slide appearance-none bg-red-400 p-4 rounded cursor-pointer border-2">
           1
         </button>
-        <button className="keen-slider__slide appearance-none bg-green-400 p-4 rounded cursor-pointer">
+        <button className="keen-slider__slide appearance-none bg-green-400 p-4 rounded cursor-pointer border-2">
           2
         </button>
-        <button className="keen-slider__slide appearance-none bg-blue-400 p-4 rounded cursor-pointer">
+        <button className="keen-slider__slide appearance-none bg-blue-400 p-4 rounded cursor-pointer border-2">
           3
         </button>
       </div>
