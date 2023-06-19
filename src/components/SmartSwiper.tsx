@@ -5,7 +5,13 @@ import {
   type KeenSliderInstance,
   type KeenSliderPlugin,
 } from "keen-slider/react";
-import { useState, type MutableRefObject } from "react";
+import {
+  useState,
+  type MutableRefObject,
+  forwardRef,
+  type HTMLAttributes,
+} from "react";
+import Image from "next/image";
 
 import "keen-slider/keen-slider.min.css";
 import { cn } from "@/lib/utils";
@@ -16,11 +22,11 @@ function ThumbnailPlugin(
   return (slider) => {
     function removeActive() {
       slider.slides.forEach((slide) => {
-        slide.classList.remove("border-dashed");
+        slide.classList.remove("border-red-400");
       });
     }
     function addActive(idx: number) {
-      slider.slides[idx].classList.add("border-dashed");
+      slider.slides[idx].classList.add("border-red-400");
     }
 
     function addClickEvents() {
@@ -45,13 +51,23 @@ function ThumbnailPlugin(
   };
 }
 
-export default function SmartSwiper() {
+type Props = {
+  children: React.ReactNode;
+  thumbnails: {
+    id: number;
+    type: "image" | "video";
+    thumbnail: string;
+  }[];
+};
+
+export default function SmartSwiper({ children, thumbnails }: Props) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
     initial: 0,
     slides: {
       perView: 1,
+      spacing: 16,
     },
     slideChanged(slider) {
       setCurrentSlide(slider.track.details.rel);
@@ -64,7 +80,7 @@ export default function SmartSwiper() {
     {
       initial: 0,
       slides: {
-        perView: 4,
+        perView: 8,
         spacing: 16,
       },
     },
@@ -73,16 +89,8 @@ export default function SmartSwiper() {
 
   return (
     <div className={cn("w-full invisible", loaded && "visible")}>
-      <div ref={sliderRef} className="keen-slider relative rounded h-[400px]">
-        <div className="keen-slider__slide bg-red-400 p-4 grid place-items-center">
-          1
-        </div>
-        <div className="keen-slider__slide bg-green-400 p-4 grid place-items-center">
-          2
-        </div>
-        <div className="keen-slider__slide bg-blue-400 p-4 grid place-items-center">
-          3
-        </div>
+      <div ref={sliderRef} className="keen-slider relative rounded h-[500px]">
+        {children}
         {loaded && instanceRef.current && (
           <>
             <button
@@ -121,24 +129,74 @@ export default function SmartSwiper() {
                 }}
                 className={cn(
                   "w-4 h-4 rounded-full bg-gray-400 border-2 border-gray-400",
-                  currentSlide === idx && "border-red-400"
+                  currentSlide === idx && "bg-red-400 border-red-400"
                 )}
               ></button>
             );
           })}
         </div>
       )}
-      <div ref={thumbnailRef} className="keen-slider">
-        <button className="keen-slider__slide appearance-none bg-red-400 p-4 rounded cursor-pointer border-2">
-          1
-        </button>
-        <button className="keen-slider__slide appearance-none bg-green-400 p-4 rounded cursor-pointer border-2">
-          2
-        </button>
-        <button className="keen-slider__slide appearance-none bg-blue-400 p-4 rounded cursor-pointer border-2">
-          3
-        </button>
+      <div ref={thumbnailRef} className="keen-slider h-[100px]">
+        {thumbnails.map(({ id, thumbnail, type }) => (
+          <ThumbnailSlide key={id} className="relative">
+            <Image
+              className="w-full h-full object-cover"
+              src={thumbnail}
+              width={100}
+              height={100}
+              alt=""
+            />
+            {type === "video" && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-white"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+              </div>
+            )}
+          </ThumbnailSlide>
+        ))}
       </div>
     </div>
   );
 }
+
+export const Slide = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ children, className }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn("keen-slider__slide", "bg-red-400 rounded", className)}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+Slide.displayName = "Slide";
+
+const ThumbnailSlide = forwardRef<
+  HTMLButtonElement,
+  HTMLAttributes<HTMLButtonElement>
+>(({ children, className }, ref) => {
+  return (
+    <button
+      ref={ref}
+      className={cn(
+        "keen-slider__slide",
+        "bg-red-400 rounded cursor-pointer border-2 border-solid",
+        className
+      )}
+    >
+      {children}
+    </button>
+  );
+});
+ThumbnailSlide.displayName = "Thumbnail";
